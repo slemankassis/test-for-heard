@@ -75,4 +75,67 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
+// UPDATE transaction
+router.put("/:id", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      title,
+      description,
+      amount,
+      fromAccount,
+      toAccount,
+      transactionDate,
+    } = req.body;
+
+    const updateText = `
+      UPDATE transactions
+      SET title = $1,
+          description = $2,
+          amount = $3,
+          from_account = $4,
+          to_account = $5,
+          transaction_date = $6
+      WHERE transaction_id = $7
+      RETURNING *;
+    `;
+    const result = await pool.query(updateText, [
+      title,
+      description,
+      amount,
+      fromAccount,
+      toAccount,
+      transactionDate,
+      id,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update transaction" });
+  }
+});
+
+// DELETE transaction
+router.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      "DELETE FROM transactions WHERE transaction_id = $1 RETURNING *;",
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+    res.json({ message: "Transaction removed successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete transaction" });
+  }
+});
+
 export default router;

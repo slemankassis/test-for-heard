@@ -24,7 +24,6 @@ const TransactionForm: React.FC<Props> = ({ onSuccess }) => {
         toAccount,
         transactionDate,
       });
-
       setTitle("");
       setDescription("");
       setAmount(0);
