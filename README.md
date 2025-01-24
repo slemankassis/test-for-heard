@@ -1,115 +1,299 @@
-# Heard Take Home Assessment
+# Financial Transaction Data App
 
-## About Heard
-[Heard](https://www.joinheard.com/) is an all-in-one financial solution for therapists that combines software and human support to handle bookkeeping, taxes, payroll, and more. Our mission is to help therapists be therapists by acting as their financial back office to empower therapists to spend less time running their business and more time giving clients the help and support they need through an affordable, easy-to-use software tool with real-time human support.
+Welcome to the **Financial Transaction Data App**—a simple **CRUD** application to manage transaction records with a full-stack setup (**React + Node/Express + PostgreSQL**). This README explains the **technical decisions**, **technology stack**, **performance**, **accessibility**, and **SEO** considerations, and provides instructions on how to run the project locally.
 
-Heard is growing rapidly, and could use your expertise to help us become an industry-leading software services provider for independent mental health practitioners!
-
-## About the Take Home
-Welcome to the first stage of our technical interview process! As part of your application, we invite you to complete a take-home software assessment. This assessment is designed to showcase your coding abilities and understanding of web application development.
-
-The task is to build a simple CRUD (Create, Retrieve, Update, Delete) web application consisting of a frontend with which a user can interact, a backend, and a datastore of your choice. This app will be used to interact with transaction data. 
-
-This application will form a basis for discussion in subsequent stages of the interview process, where you may be asked to extend its functionality or discuss the choices you made while building it.
-
-### Key Objectives
 ---
-- **Frontend + Backend**: The primary purpose of this exercise is to showcase your full-stack skills in both the frontend and backend. You can choose the technologies and frameworks you are most comfortable with.
-- **Complete CRUD Operations**: The web app should enable users to create new transactions, retrieve existing ones, update them, and delete them as needed.
-- **Data Persistence**: Transactions should be stored so that they persist between sessions (e.g., local database works great).
-- **Git Repository**: All code should be uploaded to a Git-based repository (such as GitHub or GitLab) for review.
-- **Documentation**: Please include clear documentation on how to run your service and website locally. This should guide any reviewer through setting up and using your application.
-- **Dependencies**: List any dependencies in your documentation so that anyone cloning the repository knows what they need to install to run your application.
-- **Time Management**: Aim to spend at most 2 hours on this exercise. It's about demonstrating your approach to problem-solving and coding rather than delivering a feature-complete application.
 
-### What's Less Important
+## Table of Contents
+
+1.  [Overview](#overview)
+2.  [Tech Stack & Decisions](#tech-stack--decisions)
+3.  [Folder Structure](#folder-structure)
+4.  [How to Run Locally](#how-to-run-locally)
+5.  [Environment Variables](#environment-variables)
+6.  [Performance Considerations](#performance-considerations)
+7.  [Accessibility Considerations](#accessibility-considerations)
+8.  [SEO Considerations](#seo-considerations)
+9.  [TODO Improvements](#todo-improvements)
+10. [Screenshots](#screenshots)
+
 ---
-- **Custom CSS/Styling**: While we appreciate a well-styled application, there are other focuses here. Feel free to use any CSS framework you are comfortable with.
-- **Deployment**: There's no need to deploy the application. A version that runs locally on your machine is entirely sufficient.
-Submission
-- **Additional Features**: Features such as filtering, pagination, or advanced querying is not required.
 
-Once you have completed the assessment, please provide the URL to your Git repository. Ensure that your repository is public or that access is granted to [@dperconti](https://github.com/dperconti).
+## Overview
 
-## Financial Transaction Data App
+This application allows you to **Create**, **Retrieve**, **Update**, and **Delete** financial transactions. Each transaction has:
 
-Each transaction must include the following attributes:
-- `transactionId`: A unique identifier for the transaction (string).
-- `amount`: The transaction amount in cents (Int).
-- `description`: A brief description of the transaction (string).
-- `fromAccount`: an account identifier from which the amount will be _deducted_ from.
-- `toAccount`: an account identifier from which the amount will be _added_ / _credited_ to.
-- `transactionDate`: The date when the transaction occurred (string in the format of your choosing). Note that this will be used in further levels of the interview.
+- **Transaction ID** (`transaction_id` in DB / `transactionId` in frontend)
+- **Title**
+- **Description**
+- **Amount** (in cents)
+- **From Account**
+- **To Account**
+- **Transaction Date**
 
-### Example Transactions
+### Key Features
 
-Full data example is available [HERE](./data/transactions.json).
+- **RESTful API** built with Node, Express, and TypeScript.
+- **Frontend** built with React, TypeScript, and Tailwind CSS.
+- **Persistent** data storage using PostgreSQL.
+- **CRUD** operations demonstrated on client and server sides.
+- Simple form validations and user feedback on success/failure.
 
-```json
-[
-    {
-        "title": "transaction_1",
-        "description": "Transaction 1",
-        "amount": 86203,
-        "fromAccount": "account_3",
-        "toAccount": "account_6",
-        "transactionDate": "2023-05-24"
-    },
-    {
-        "title": "transaction_2",
-        "description": "Transaction 2",
-        "amount": 71532,
-        "fromAccount": "account_4",
-        "toAccount": "account_6",
-        "transactionDate": "2023-04-15"
-    }
-    ...
-]
+---
+
+## Tech Stack & Decisions
+
+### 1\. Frontend
+
+- **React**: Well-known, efficient library for building user interfaces.
+- **TypeScript**: Adds static typing to JavaScript, improving maintainability and reducing bugs.
+- **Tailwind CSS**: Utility-first CSS framework, quick to integrate and easily customizable.
+
+**Why React + Tailwind?**
+
+- React fosters reusable UI components.
+- Tailwind offers fast styling without leaving JSX/TSX. Minimal custom CSS needed.
+
+### 2\. Backend
+
+- **Node.js / Express**: Straightforward to set up RESTful endpoints.
+- **TypeScript**: For type safety and better developer tooling.
+- **pg (node-postgres)**: Native PostgreSQL client for Node.
+
+**Why Node + Express?**
+
+- Lightweight, simple, and widely used.
+- Great community support and a mature ecosystem.
+- Integrates well with TypeScript and PostgreSQL.
+
+### 3\. Database
+
+- **PostgreSQL**: A robust, open-source relational database.
+- Chosen for its reliability, ACID compliance, and strong community.
+
+### 4\. Decisions & Rationale
+
+- **Separate Repositories or Folders?**
+  Kept **frontend** and **backend** in separate folders within a single repo for clarity.
+- **UUID vs. Numeric ID?**
+  - The app uses a **UUID** (`transaction_id`) for primary reference, more unique than a numeric ID and avoids revealing sequential data.
+  - Internally, the DB has both `id` (SERIAL PRIMARY KEY) and `transaction_id` (VARCHAR/UUID). The CRUD logic uses `transaction_id` for lookups.
+
+---
+
+## Folder Structure
+
+- **backend/src/index.ts**: Entry point for the Node server.
+- **backend/src/db.ts**: Database connection configuration.
+- **backend/src/routes/transactionRoutes.ts**: CRUD endpoints for transactions.
+- **frontend/src/components**: React components for listing, creating, and editing transactions.
+
+---
+
+## How to Run Locally (Using Restore Terminals VSCode Extension)
+
+1. Download the [extension](https://marketplace.visualstudio.com/items?itemName=EthanSK.restore-terminals)
+2. Open the commands palette and run "Restore Terminals"
+3. It will open 3 splited terminals with the backend, the frontend, and the db
+
+## How to Run Locally
+
+### 1\. Clone the Repo
+
+`git clone https://github.com/YourUser/my-transaction-app.git && cd my-transaction-app`
+
+### 2\. Set Up the Database
+
+1.  Ensure you have **PostgreSQL** installed (e.g., Homebrew on macOS).
+2.  Create a database and table:
+
+```
+CREATE DATABASE my_transaction_db;
+\c my_transaction_db;
+
+CREATE TABLE IF NOT EXISTS transactions (
+    id SERIAL PRIMARY KEY,
+    transaction_id VARCHAR(255) UNIQUE NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    amount INT NOT NULL,
+    from_account VARCHAR(255) NOT NULL,
+    to_account VARCHAR(255) NOT NULL,
+    transaction_date VARCHAR(50) NOT NULL
+);
 ```
 
-## Other Considerations
+3.  Create a user or use the default superuser:
 
-> **❗** Note: These aren't all the technologies that we use at Heard, but most are relevant to our tech stack. 
+```
+CREATE USER myuser WITH PASSWORD 'mypassword';
+GRANT ALL PRIVILEGES ON DATABASE my_transaction_db TO myuser;
+```
 
+### 3\. Configure Environment Variables
 
-### Technologies we Enjoy and/or Use
-**Languages**
+In `backend/.env`:
 
-![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) 
+```
+PORT=4000
+DATABASE_URL=postgresql://myuser:mypassword@localhost:5432/my_transaction_db
+```
 
-**Frontend Frameworks & Tools**
+Install dependencies and run the server:
 
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) ![React Query](https://img.shields.io/badge/-React%20Query-FF4154?style=for-the-badge&logo=react%20query&logoColor=white) ![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white) ![React Hook Form](https://img.shields.io/badge/React%20Hook%20Form-%23EC5990.svg?style=for-the-badge&logo=reacthookform&logoColor=white) ![Redux](https://img.shields.io/badge/redux-%23593d88.svg?style=for-the-badge&logo=redux&logoColor=white) 
+`cd backend && npm install && npm run dev`
 
-**CSS Frameworks**
+You should see `Server listening on port 4000` in your terminal.
 
-![Semantic UI React](https://img.shields.io/badge/Semantic%20UI%20React-%2335BDB2.svg?style=for-the-badge&logo=SemanticUIReact&logoColor=white) ![Styled Components](https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white) ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) ![Ant-Design](https://img.shields.io/badge/-AntDesign-%230170FE?style=for-the-badge&logo=ant-design&logoColor=white)
+### 4\. Run the Frontend
 
-**API & App Frameworks**
+In a **new** terminal:
 
-![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB) ![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white) ![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray) ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi) ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white) ![NestJS](https://img.shields.io/badge/nestjs-%23E0234E.svg?style=for-the-badge&logo=nestjs&logoColor=white) ![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white) ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+`cd frontend && npm install && npm run dev`
 
-**Hosting/SaaS**
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white) ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white) ![Datadog](https://img.shields.io/badge/datadog-%23632CA6.svg?style=for-the-badge&logo=datadog&logoColor=white) ![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white) ![Heroku](https://img.shields.io/badge/heroku-%23430098.svg?style=for-the-badge&logo=heroku&logoColor=white) ![Netlify](https://img.shields.io/badge/netlify-%23000000.svg?style=for-the-badge&logo=netlify&logoColor=#00C7B7) ![Render](https://img.shields.io/badge/Render-%46E3B7.svg?style=for-the-badge&logo=render&logoColor=white) ![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
+### 5\. Test the Endpoints
 
-**ORMs**
+- **Create** a transaction via the UI or using a tool like Postman:
 
-![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white) ![Sequelize](https://img.shields.io/badge/Sequelize-52B0E7?style=for-the-badge&logo=Sequelize&logoColor=white)
+  - **POST** `http://localhost:4000/api/transactions` with JSON body:
 
-**Version Control**
+```
+{
+  "title": "Test",
+  "description": "Sample transaction",
+  "amount": 2000,
+  "fromAccount": "AccountA",
+  "toAccount": "AccountB",
+  "transactionDate": "2025-01-01"
+}
+```
 
-![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+- **List** all transactions:
+  - **GET** `http://localhost:4000/api/transactions`
 
-## Example
+---
 
-Below is an example of what your application _could_ look like. 
+## Environment Variables
+
+- **PORT**: The port on which Express listens (default 4000).
+- **DATABASE_URL**: Connection string for PostgreSQL, e.g. `postgresql://myuser:mypassword@localhost:5432/my_transaction_db`.
+
+Ensure you load these via a `.env` file at the root of your backend. For security, **never** commit real credentials to a public repo.
+
+---
+
+## Performance Considerations
+
+1.  **Client-Side**
+    - React with minimal overhead for a small CRUD app.
+    - Could implement code splitting if many routes/components.
+    - Could add React Query or SWR for caching.
+2.  **Server-Side**
+    - Express is lightweight; consider NestJS or advanced caching if scaling.
+    - Connection pooling via `pg.Pool` for efficient DB connections.
+3.  **Database**
+    - Index on `transaction_id` for fast lookups.
+    - For large-scale usage, consider indexing `transaction_date` if heavily queried.
+4.  **Yarn Preference** over **npm**:
+    - Faster dependency installation (`yarn install` vs. `npm install`).
+    - Better dependency resolution and caching mechanism.
+    - Predictable `yarn.lock` file for managing dependencies.
+    - Support for workspaces when managing monorepos.
+    - Improved command consistency (e.g., `yarn add`, `yarn remove`).
+
+---
+
+## Accessibility Considerations
+
+- **Form Labels**: Each input has a `<label>` for screen readers.
+- **Semantic HTML**: A `<table>` is used for transaction listings, improving screen reader parsing.
+- **Focus Management**: The modal (`TransactionModal.tsx`) is a fixed overlay; consider trapping focus inside it.
+- **Color Contrast**: Tailwind defaults are decent, but can be refined.
+
+---
+
+## SEO Considerations
+
+- **Single-Page App**: Standard React approach. For more advanced SEO, consider Next.js/SSR.
+- **Page Titles & Metadata**: Currently just a single `<title>` in `index.html`. Could dynamically update `<title>` and `<meta>` or use SSR.
+- **Accessible Routing**: Currently minimal. For robust SEO, might use SSR or server-side routing.
+
+## TODO Improvements
+
+### Confirmation messages and alerts
+
+- Add delete confirmation messages
+- Add snackbar for undo action
+
+### Unit Testing with Jest and React Testing Library
+
+- **Add Unit Testing**:
+  - Rendering components.
+  - Mocking API calls with Jest.
+  - Testing input validation in forms.
+
+---
+
+### Add E2E Testing with Cypress
+
+- Navigating through the app.
+- Creating a transaction via the modal and verifying the result.
+- Editing and deleting transactions.
+
+---
+
+### API Documentation
+
+- Provide example requests and responses for each endpoint.
+- Mention expected status codes (e.g., `200 OK`, `201 Created`, `404 Not Found`, etc.).
+
+---
+
+### Accessibility Features
+
+- Expand on how accessibility is ensured in the app:
+  - Form labels.
+- Suggest improvements, such as:
+  - Adding focus traps in modals.
+  - Keyboard navigation support.
+
+---
+
+### SEO Improvements
+
+- **Improve SEO Documentation**:
+  - Suggest adding dynamic metadata (e.g., `<title>` and `<meta>` tags) for better indexing.
+
+---
+
+### Performance Optimization
+
+- Use React Query or SWR for caching API responses.
+- Implement lazy loading and code splitting for large components.
+- Add database indexes for frequently queried fields like `transaction_date` and `transaction_id`.
+- Include tools for monitoring performance (e.g., Lighthouse, Postman).
+- Add useMemo and useCallback
+- Add debounce
+- Add pagination
+
+---
+
+### Deployment
+
+- **Add Deployment with Vercel**
+
+## Screenshots
 
 **List Transactions**
-![Example dashboard for listing transaction data](./assets/List%20Transactions.png "Example dashboard for listing transaction data")
+![Example dashboard for listing transaction data](./image.png "Example dashboard for listing transaction data")
 
 **Create Transaction**
-![Example dashboard for creating a transaction](./assets/Create%20Transaction.png "Example dashboard for creating a transaction")
+![Example dashboard for creating a transaction](./image-2.png "Example dashboard for creating a transaction")
 
 **Update Transaction**
-![Example dashboard for updating a transaction](./assets/Update%20Transaction.png "Example dashboard for updating a transaction")
+![Example dashboard for updating a transaction](./image-1.png "Example dashboard for updating a transaction")
+
+**Development Environment**
+![](./image-3.png)
