@@ -12,6 +12,7 @@ DB_NAME="my_transaction_db"
 DB_USER="myuser"
 DB_PASS="mypassword"
 DATA_DIR="/opt/homebrew/var/postgresql@14"
+DATA_FILE="./backend/data/transactions.json" # Path to the data file
 
 echo "==> Stopping any running PostgreSQL services..."
 brew services stop postgresql 2>/dev/null || true
@@ -40,8 +41,8 @@ echo "==> Waiting a few seconds for the server to spin up..."
 sleep 5
 
 # -----------------------------------------------------
-#  Create your application user & database
-#   using the superuser 'postgres'
+# Create your application user & database
+# using the superuser 'postgres'
 # -----------------------------------------------------
 echo "==> Creating user [$DB_USER] and database [$DB_NAME]..."
 psql -U postgres -tc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" \
@@ -53,13 +54,19 @@ psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" \
 psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"
 
 # -----------------------------------------------------
-#  Create the transactions table
+# Enable uuid-ossp extension
+# -----------------------------------------------------
+echo "==> Enabling uuid-ossp extension in [$DB_NAME]..."
+psql -U postgres -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+
+# -----------------------------------------------------
+# Create the transactions table
 # -----------------------------------------------------
 echo "==> Creating 'transactions' table (if not exists) in [$DB_NAME]..."
 psql -U "${DB_USER}" -d "${DB_NAME}" -c "
 CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
-    transaction_id VARCHAR(255) UNIQUE NOT NULL,
+    transaction_id UUID UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
     amount INT NOT NULL,
@@ -69,6 +76,30 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 "
 
+# -----------------------------------------------------
+# Populate initial data from data/transactions.json
+
+# -----------------------------------------------------
+if [[ -f "$DATA_FILE" ]]; then
+  echo "==> Populating initial data from [$DATA_FILE]..."
+  while IFS= read -r line; do
+    # Convert JSON line to SQL INSERT
+    TITLE=$(echo "$line" | jq -r '.title')
+    DESCRIPTION=$(echo "$line" | jq -r '.description')
+    AMOUNT=$(echo "$line" | jq -r '.amount')
+    FROM_ACCOUNT=$(echo "$line" | jq -r '.fromAccount')
+    TO_ACCOUNT=$(echo "$line" | jq -r '.toAccount')
+    TRANSACTION_DATE=$(echo "$line" | jq -r '.transactionDate')
+
+    psql -U "$DB_USER" -d "$DB_NAME" -c "
+    INSERT INTO transactions (title, description, amount, from_account, to_account, transaction_date)
+    VALUES ('$TITLE', '$DESCRIPTION', $AMOUNT, '$FROM_ACCOUNT', '$TO_ACCOUNT', '$TRANSACTION_DATE');
+    " || echo "Failed to insert transaction: $TITLE"
+  done < <(jq -c '.[]' "$DATA_FILE")
+else
+  echo "Data file [$DATA_FILE] not found. Skipping initial data population."
+fi
+
 echo
 echo "=============================================================="
 echo "PostgreSQL 14 is now set up with:"
@@ -76,5 +107,5 @@ echo " - Data directory: $DATA_DIR"
 echo " - SUPERUSER:      postgres"
 echo " - DB user:        $DB_USER (password: $DB_PASS)"
 echo " - DB name:        $DB_NAME"
-echo " - 'transactions' table created"
+echo " - 'transactions' table created and populated (if data file exists)"
 echo "=============================================================="
