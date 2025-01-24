@@ -43,6 +43,7 @@
             "bash",
             "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash",
             "nvm use 18",
+            "chmod +x ./backend/scripts/setup-db.sh",
             "./backend/scripts/setup-db.sh"
           ]
         }

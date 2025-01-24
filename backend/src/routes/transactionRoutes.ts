@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import pool from "../db";
-import { Transaction } from "../models/transaction";
 import { v4 as uuidv4 } from "uuid";
 
 const router = Router();
@@ -35,50 +34,79 @@ router.post("/", async (req: Request, res: Response) => {
       transactionDate,
     ]);
 
-    res.status(201).json(result.rows[0]);
+    const row = result.rows[0];
+    return res.status(201).json({
+      transactionId: row.transaction_id,
+      title: row.title,
+      description: row.description,
+      amount: row.amount,
+      fromAccount: row.from_account,
+      toAccount: row.to_account,
+      transactionDate: row.transaction_date,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create transaction" });
+    return res.status(500).json({ error: "Failed to create transaction" });
   }
 });
 
-// READ all transactions
+// READ ALL
 router.get("/", async (req: Request, res: Response) => {
   try {
     const result = await pool.query(
       "SELECT * FROM transactions ORDER BY transaction_date ASC;"
     );
-    res.json(result.rows);
+
+    const mapped = result.rows.map((row) => ({
+      transactionId: row.transaction_id,
+      title: row.title,
+      description: row.description,
+      amount: row.amount,
+      fromAccount: row.from_account,
+      toAccount: row.to_account,
+      transactionDate: row.transaction_date,
+    }));
+
+    return res.json(mapped);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to fetch transactions" });
+    return res.status(500).json({ error: "Failed to fetch transactions" });
   }
 });
 
-// READ single transaction
-router.get("/:id", async (req: Request, res: Response) => {
+// READ SINGLE
+router.get("/:transactionId", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { transactionId } = req.params;
     const result = await pool.query(
       "SELECT * FROM transactions WHERE transaction_id = $1;",
-      [id]
+      [transactionId]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Transaction not found" });
     }
 
-    res.json(result.rows[0]);
+    const row = result.rows[0];
+    return res.json({
+      transactionId: row.transaction_id,
+      title: row.title,
+      description: row.description,
+      amount: row.amount,
+      fromAccount: row.from_account,
+      toAccount: row.to_account,
+      transactionDate: row.transaction_date,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to fetch transaction" });
+    return res.status(500).json({ error: "Failed to fetch transaction" });
   }
 });
 
-// UPDATE transaction
-router.put("/:id", async (req: Request, res: Response) => {
+// UPDATE
+router.put("/:transactionId", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { transactionId } = req.params;
     const {
       title,
       description,
@@ -106,35 +134,44 @@ router.put("/:id", async (req: Request, res: Response) => {
       fromAccount,
       toAccount,
       transactionDate,
-      id,
+      transactionId,
     ]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Transaction not found" });
     }
 
-    res.json(result.rows[0]);
+    const row = result.rows[0];
+    return res.json({
+      transactionId: row.transaction_id,
+      title: row.title,
+      description: row.description,
+      amount: row.amount,
+      fromAccount: row.from_account,
+      toAccount: row.to_account,
+      transactionDate: row.transaction_date,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to update transaction" });
+    return res.status(500).json({ error: "Failed to update transaction" });
   }
 });
 
-// DELETE transaction
-router.delete("/:id", async (req: Request, res: Response) => {
+// DELETE
+router.delete("/:transactionId", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { transactionId } = req.params;
     const result = await pool.query(
       "DELETE FROM transactions WHERE transaction_id = $1 RETURNING *;",
-      [id]
+      [transactionId]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Transaction not found" });
     }
-    res.json({ message: "Transaction removed successfully" });
+    return res.json({ message: "Transaction removed successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to delete transaction" });
+    return res.status(500).json({ error: "Failed to delete transaction" });
   }
 });
 
